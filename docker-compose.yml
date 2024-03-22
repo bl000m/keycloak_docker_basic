@@ -15,8 +15,8 @@ services:
       - "5432:5432"
     networks:
       - keycloak_network
-    env_file:  # Specify the location of the .env file
-      - .env  # Location of your .env file
+    env_file:
+      - .env
 
   keycloak:
     image: quay.io/keycloak/keycloak:24.0.0
@@ -44,8 +44,8 @@ services:
       - keycloak_network
     volumes:
       - ./certs:/opt/keycloak/demo/certs
-    env_file:  # Specify the location of the .env file
-      - .env  # Location of your .env file
+    env_file:  
+      - .env
 
 volumes:
   pgdata_keycloak:
