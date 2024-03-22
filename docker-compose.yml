@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  postgres_keycloak:
+    image: postgres:14.2
+    container_name: keycloak_db
+    command: postgres -c 'max_connections=200'
+    volumes:
+      - pgdata_keycloak:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    networks:
+      - keycloak_network
+    env_file:  # Specify the location of the .env file
+      - .env  # Location of your .env file
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.0
+    command: start-dev
+    container_name: keycloak_test
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres_keycloak
+      KC_DB_URL_DATABASE: ${POSTGRES_DB}
+      KC_DB_URL_PORT: 5432
+      KC_DB_USERNAME: ${POSTGRES_USER}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      KC_DB_SCHEMA: public
+      KC_PROXY: edge
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_HTTPS_CERTIFICATE_FILE: /opt/keycloak/demo/certs/ssl_certificate_from_CA.pem
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /opt/keycloak/demo/certs/ssl_certificate_private.key
+    ports:
+      - "8090:8080"
+      - "8843:8443"
+    depends_on:
+      - postgres_keycloak
+    networks:
+      - keycloak_network
+    volumes:
+      - ./certs:/opt/keycloak/demo/certs
+    env_file:  # Specify the location of the .env file
+      - .env  # Location of your .env file
+
+volumes:
+  pgdata_keycloak:
+
+networks:
+  keycloak_network:
+    driver: bridge
+
